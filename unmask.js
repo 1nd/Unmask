@@ -9,7 +9,6 @@
  * 
  * @requires jQuery {@link http://jquery.com/}
  * @requires jStorage {@link https://github.com/andris9/jStorage}
- * @requires Browser ID {@link https://github.com/pradhanaindra/BrowserId}
  * 
  * @copyright 2014 Pradhana Indra {@link https://github.com/pradhanaindra}
  * @license MIT
@@ -20,10 +19,9 @@ Unmask = function() {
 Unmask.prototype = function() {
 	var isPasswordUnmasked;
 	var options;
-	var browserId = new BrowserId();
 	var DEFAULT_LANG = 'eng';
 	var unmaskConfirmationText = {
-		eng : 'Your password is going to be shown as plain text. For your security, please ensure no one watches. Unmask your password now? (This message only appear once)',
+		eng : 'Your password is going to be shown as plain text. For your security, please ensure no one see. Unmask your password now? (This message only appear once)',
 		ind : 'Password anda akan ditampilkan sebagai teks biasa. Demi keamanan anda, pastikan tidak ada orang lain yang melihat. Tampilkan sebagai teks biasa sekarang? (Pesan ini hanya muncul 1 kali)'
 	};
 	var toggleLabelText = {
@@ -66,6 +64,11 @@ Unmask.prototype = function() {
 	 * @param {string} [userOptions.passwordConfirmationWrapperId] - Optional.
 	 * HTML element's ID of password confirmation field wrapper. Omit this
 	 * option if the form does not have password confirmation field.
+	 * @param {object} [userOptions.flagNoConfirmation] - Optional. HTML
+	 * attribute(s) of a hidden input field created as flag to tell server-side
+	 * scripting whether submitted password need to be checked against password
+	 * confirmation field or not. If "Unmask" is in use, the hidden field is
+	 * created and its value is set to "false".
 	 * @param {string} [userOptions.toggleLabelClass.unmasked] - Optional.
 	 * Toggle button's text class when password is unmasked/shown as plain text.
 	 * @param {string} [userOptions.toggleLabelClass.masked] - Optional. Toggle
@@ -77,82 +80,75 @@ Unmask.prototype = function() {
 	 * @param {string} [userOptions.unmaskConfirmationText] - Optional. Text for
 	 * confirmation dialog that shown first time user try to unmask the
 	 * password.
-	 * @param {object} [userOptions.flagNoConfirmation] - Optional. HTML
-	 * attribute(s) of a hidden input field created as flag to tell server-side
-	 * scripting whether submitted password need to be checked against password
-	 * confirmation field or not. If "Unmask" is in use, the hidden field is
-	 * created and its value is set to "false".
-	 * 
-	 * @param {string} [language] - Optional. ISO 639-2 code of language used.
+	 * @param {string} [userOptions.language] - Optional. ISO 639-2 code of
+	 * language used.
 	 */
-	var init = function(userOptions, language) {
-		if (browserId.isOperaMini() == false) {
-			var unmaskObj = this;
+	var init = function(userOptions) {
+		var unmaskObj = this;
 
-			if (language === undefined) {
-				language = DEFAULT_LANG;
-			}
-			// Set default value of userOptions
-			var defaultOptions = {
-				toggleLabelClass : {
-					unmasked : 'unmasked_password__label_unmasked',
-					masked : 'unmasked_password__label_masked'
-				},
-				toggleLabelText : toggleLabelText[language],
-				unmaskConfirmationText : unmaskConfirmationText[language]
-			};
-			// Merge default options with user-submitted options
-			options = jQuery.extend(true, {}, defaultOptions, userOptions);
-
-			var $toggleElem = $('#' + options.toggleId);
-			var $passwordElem = $('#' + options.passwordId);
-
-			// Show toggle button
-			$toggleElem.show();
-
-			// Set event when toggle button is clicked (toggle the password
-			// between masked/unmasked)
-			$toggleElem.on('click', function() {
-				if (confirmationDialog()) {
-					// Cannot use $passwordElem because it may refer to old
-					// password HTMLElement
-					unmaskObj.togglePassword($('#' + options.passwordId));
-					toggleLabel($toggleElem);
-				}
-			});
-
-			if (options.passwordConfirmationWrapperId != null
-					&& options.passwordConfirmationWrapperId != '') {
-				// Hide "password confirmation" section (not only the field, but
-				// also label, etc.)
-				$('#' + options.passwordConfirmationWrapperId).hide();
-			}
-
-			// Create hidden field as flag to tell backend that password does
-			// not need confirmation
-			if ($.isEmptyObject(options.flagNoConfirmation) == false) {
-				$('<input>', {
-					attr : $.extend(true, {}, {
-						'type' : 'hidden',
-						'value' : 0
-					// We cannot use false here, because server-side scripting
-					// may submit the value as string "false" which is not
-					// evaluated as boolean false
-					}, options.flagNoConfirmation)
-				}).appendTo($passwordElem.closest('form'));
-			}
-
-			// Set label in toggle button
-			setShownLabel($toggleElem);
-			setHiddenLabel($toggleElem);
-
-			// Hide wrong label in toggle button
-			$toggleElem.find('.' + options.toggleLabelClass.unmasked).hide();
-			$toggleElem.attr('aria-label', function() {
-				return $(this).find('.' + options.toggleLabelClass.masked)
-						.eq(0).text();
-			});
+		if (userOptions.language === undefined) {
+			userOptions.language = DEFAULT_LANG;
 		}
+		// Set default value of userOptions
+		var defaultOptions = {
+			toggleLabelClass : {
+				unmasked : 'unmasked_password__label_unmasked',
+				masked : 'unmasked_password__label_masked'
+			},
+			toggleLabelText : toggleLabelText[userOptions.language],
+			unmaskConfirmationText : unmaskConfirmationText[userOptions.language]
+		};
+		// Merge default options with user-submitted options
+		options = jQuery.extend(true, {}, defaultOptions, userOptions);
+
+		var $toggleElem = $('#' + options.toggleId);
+		var $passwordElem = $('#' + options.passwordId);
+
+		// Show toggle button
+		$toggleElem.show();
+
+		// Set event when toggle button is clicked (toggle the password
+		// between masked/unmasked)
+		$toggleElem.on('click', function() {
+			if (confirmationDialog()) {
+				// Cannot use $passwordElem because it may refer to old
+				// password HTMLElement
+				unmaskObj.togglePassword($('#' + options.passwordId));
+				toggleLabel($toggleElem);
+			}
+		});
+
+		if (options.passwordConfirmationWrapperId != null
+				&& options.passwordConfirmationWrapperId != '') {
+			// Hide "password confirmation" section (not only the field, but
+			// also label, etc.)
+			$('#' + options.passwordConfirmationWrapperId).hide();
+		}
+
+		// Create hidden field as flag to tell backend that password does
+		// not need confirmation
+		if ($.isEmptyObject(options.flagNoConfirmation) == false) {
+			$('<input>', {
+				attr : $.extend(true, {}, {
+					'type' : 'hidden',
+					'value' : 0
+				// We cannot use false here, because server-side scripting
+				// may submit the value as string "false" which is not
+				// evaluated as boolean false
+				}, options.flagNoConfirmation)
+			}).appendTo($passwordElem.closest('form'));
+		}
+
+		// Set label in toggle button
+		setShownLabel($toggleElem);
+		setHiddenLabel($toggleElem);
+
+		// Hide wrong label in toggle button
+		$toggleElem.find('.' + options.toggleLabelClass.unmasked).hide();
+		$toggleElem.attr('aria-label', function() {
+			return $(this).find('.' + options.toggleLabelClass.masked)
+					.eq(0).text();
+		});
 	};
 
 	/**
