@@ -1,7 +1,7 @@
 Unmask
 ======
 
-Javascript to show/hide (unmask/mask) password character in a password field.
+jQuery plugin to show/hide (unmask/mask) password character in a password field.
 
 Usually used in account registration page so user does not have to fill "Password Confirmation" field, just hit "Unmask Password" to see if password she typed is correct.
 
@@ -15,12 +15,12 @@ Usually used in account registration page so user does not have to fill "Passwor
 
 ## Supported Browsers ##
 
-*Unmask* should working in any browsers that supported by jQuery. Known **unsupported** browsers are **IE 8.0 and older**. IE 8.0 due to unknown bug. IE 7.0 and older due to bug in jQuery.
+Known **unsupported** browsers are **IE 8.0 and older**. IE 8.0 due to unknown bug. IE 7.0 and older due to bug in jQuery. *Unmask* should working in any other browsers that supported by jQuery. 
 
 Tested on:
 
-- Firefox (Windows PC & Android).
-- Chrome (Windows PC & Android).
+- Firefox (Windows PC, Linux, and Android).
+- Chrome (Windows PC, Linux & Android).
 - Opera (Windows PC & Android). Tested on all variants including Opera Mini.
 - IE (Windows PC).
 - Android Browser/AOSP.
@@ -29,7 +29,8 @@ Tested on:
 
 1. Load required modules (jQuery etc.).
 2. Load `unmask.js` in your web page.
-3. Initialize unmask by calling `Unmask.init`.
+3. Add the toggle button/link to your HTML. When user click the button/link, we will unmask/mask the password. 
+4. Initialize *Unmask*. How? See example. For information about options, check documentation inside `unmask.js`.
 
 Example on registration page:
 
@@ -62,11 +63,9 @@ Example on registration page:
 		...
 		<script>
 		$(document).on('ready', function () {
-			var theTruth = new Unmask();
-			theTruth.init({
-				toggleId : 'unmask_btn',
-				passwordId : 'password',
-				passwordConfirmationWrapperId' : 'password_confirmation_wrapper'	
+			$('#password').unmask({
+				'toggleId' : 'unmask_btn',
+				'passwordConfirmationWrapperId' : 'password_confirmation_wrapper'
 			});
 		});
 		</script>
@@ -77,7 +76,7 @@ In example above, *Unmask* will show "unmask password" button (which is hidden a
 
 ## Documentation (Docs) ##
 
-For information about `Unmask.init` parameters and anything else check documentation inside source code of `unmask.js`.
+For information about *Unmask* parameters and anything else check documentation inside source code of `unmask.js`.
 
 ## Additional Features ##
 
@@ -91,50 +90,46 @@ Currently *Unmask* provides built-in supports for English and Indonesian.
 
 Open file `unmask.js`.
 
-Add text for label of "unmask password" button. Add new object (as name-value pair) to `Unmask.prototype.toggleLabelText`.
+Add text for label of "unmask password" button. Add new object (as name-value pair) to variable `toggleLabelText`.
 
 Format
 
-	<ISO-639-2 code of the language> : {
+	<code of the language (we recommend use ISO-639-2)> : {
 		masked : <Label of the button when password is masked. It should tell user to press this button if she want to unmask and see her password as plain text>,
 		unmasked : <Label of the button when password is unmasked. It should tell user to press this button if she want to mask her password>
 	}
 
-Example: you add localization for German. `Unmask.prototype.toggleLabelText` should become:
-	
-	Unmask.prototype = function() {
+Example: you add localization for German. `toggleLabelText` should become:
 	...
-	var toggleLabelText = {
-		eng : {
-			unmasked : 'Hide password',
-			masked : 'See password'
+	toggleLabelText = {
+		'eng' : {
+			'unmasked' : 'Hide password',
+			'masked' : 'See password'
 		},
-		ind : {
-			unmasked : 'Sembunyikan',
-			masked : 'Lihat password'
+		'ind' : {
+			'unmasked' : 'Sembunyikan',
+			'masked' : 'Lihat password'
 		},
-		deu : {
-			masked : 'Siehe Passwort',
-			unmasked : 'Verbergen'
+		'deu' : {
+			'masked' : 'Siehe Passwort',
+			'unmasked' : 'Verbergen'
 		}
-	};
+	},
 	...
 
-Then add text for confirmation dialog message that displayed first time the user use "unmask password" button. Add new name-value pair to `Unmask.prototype.unmaskConfirmationText`.
+Then add text for confirmation dialog message that displayed first time the user use "unmask password" button. Add new name-value pair to `unmaskConfirmationText`.
 
 Format
 
-	<ISO-639-2 code of the language> : <Confirmation dialog message displayed to user when she click "unmask password" button for first time>
+	<code of the language (we recommend ISO-639-2)> : <Confirmation dialog message displayed to user when she click "unmask password" button for first time>
 
-Example: you add localization for German. `Unmask.prototype.unmaskConfirmationText` should become:
-
-	Unmask.prototype = function() {
+Example: you add localization for German. `unmaskConfirmationText` should become:
 	...
-	var unmaskConfirmationText = {
-		eng : 'Your password is going to be shown as plain text. For your security, please ensure no one see. Unmask your password now? (This message only appear once)',
-		ind : 'Password anda akan ditampilkan sebagai teks biasa. Demi keamanan anda, pastikan tidak ada orang lain yang melihat. Tampilkan sebagai teks biasa sekarang? (Pesan ini hanya muncul 1 kali)',
-		deu : 'Wir werden Ihr Passwort als Klartext anzeigen. Für die Sicherheit Zweck, stellen Sie bitte sicher niemand sehen kann. Zeigen Sie Ihr Passwort jetzt? (Diese Meldung nur einmal angezeigt)'
-	};
+	unmaskConfirmationText = {
+		'eng' : 'Your password is going to be shown as plain text. For your security, please ensure no one see. Unmask your password now? (This message only appear once)',
+		'ind' : 'Password anda akan ditampilkan sebagai teks biasa. Demi keamanan anda, pastikan tidak ada orang lain yang melihat. Tampilkan sebagai teks biasa sekarang? (Pesan ini hanya muncul 1 kali)',
+		'deu' : 'Wir werden Ihr Passwort als Klartext anzeigen. Für die Sicherheit Zweck, stellen Sie bitte sicher niemand sehen kann. Zeigen Sie Ihr Passwort jetzt? (Diese Meldung nur einmal angezeigt)'
+	},
 	...
 
 Note: German in examples above are translated using Google Translate. If the translations are inaccurate, confusing, or funny... please tell us... after you finish laughing :D
